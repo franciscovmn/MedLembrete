@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1064945398866",
+    "project_id": "medlembrete-19f7d",
+    "storage_bucket": "medlembrete-19f7d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1064945398866:android:787744ee593b868b6d5b8b",
+        "android_client_info": {
+          "package_name": "br.edu.ifpb.pdm.medlembrete"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDih1NA_pFjSPPZtzpBmwT_ArrtnoDJFEc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

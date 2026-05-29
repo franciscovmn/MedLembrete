@@ -9,4 +9,5 @@ data class Medicamento (
     var nome:String = "",
     var dosagem: String = "",
     var instrucoesUso: String = "",
+    var pacienteId: String = ""
 )

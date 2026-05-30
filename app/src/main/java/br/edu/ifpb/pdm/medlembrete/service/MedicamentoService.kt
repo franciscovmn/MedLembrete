@@ -20,13 +20,17 @@ class MedicamentoService(
         return medicamentoRepository.listarPorPacienteId(pacienteId)
     }
 
+    suspend fun buscarMedicamentoPorID(medicamentoId: String) : Medicamento {
+        return medicamentoRepository.buscarMedicamentoPorID(medicamentoId)
+    }
+
     // CRIAR MEDICAMENTO
     suspend fun criarMedicamento(
         nome: String,
         dosagem: String,
         instrucoesUso: String,
         pacienteId: String
-    ) {
+    ): Medicamento {
         val medicamento = Medicamento(
             nome = nome,
             dosagem = dosagem,
@@ -34,7 +38,7 @@ class MedicamentoService(
             pacienteId = pacienteId
         )
 
-        medicamentoRepository.salvarMedicamento(medicamento)
+        return medicamentoRepository.salvarMedicamento(medicamento)
     }
 
     // EDITAR MEDICAMENTO
@@ -43,7 +47,7 @@ class MedicamentoService(
         nome: String,
         dosagem: String,
         instrucoesUso: String
-    ) {
+    ): Medicamento {
         val medicamentoAtualizado = Medicamento(
             id = medicamentoId,
             nome = nome,
@@ -51,7 +55,7 @@ class MedicamentoService(
             instrucoesUso = instrucoesUso
         )
 
-        medicamentoRepository.atualizarMedicamento(medicamentoAtualizado)
+        return medicamentoRepository.atualizarMedicamento(medicamentoAtualizado)
     }
 
     // EXCLUIR MEDICAMENTO

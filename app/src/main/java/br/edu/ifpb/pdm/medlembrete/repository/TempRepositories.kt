@@ -40,11 +40,14 @@ interface PacienteRepository {
 
 interface MedicamentoRepository {
     suspend fun listarMedicamentos(): List<Medicamento> = emptyList()
+
+    suspend fun buscarMedicamentoPorID(medicamentoId: String): Medicamento 
+
     suspend fun listarPorPacienteId(pacienteId: String): List<Medicamento>
 
-    suspend fun salvarMedicamento(medicamento: Medicamento)
+    suspend fun salvarMedicamento(medicamento: Medicamento): Medicamento 
 
-    suspend fun atualizarMedicamento(medicamento: Medicamento)
+    suspend fun atualizarMedicamento(medicamento: Medicamento): Medicamento 
 
     suspend fun excluirMedicamento(medicamentoId: String)
 }

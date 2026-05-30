@@ -224,6 +224,14 @@ class MockMedicamentoRepository : MedicamentoRepository {
     override suspend fun listarMedicamentos() =
         MockDatabase.medicamentos.toList()
 
+    override suspend fun buscarMedicamentoPorID(
+        medicamentoId: String
+    ): Medicamento {
+        return MockDatabase.medicamentos.first {
+            it.id == medicamentoId
+        }
+    }
+
     override suspend fun listarPorPacienteId(
         pacienteId: String
     ): List<Medicamento> {
@@ -235,17 +243,19 @@ class MockMedicamentoRepository : MedicamentoRepository {
 
     override suspend fun salvarMedicamento(
         medicamento: Medicamento
-    ) {
+    ): Medicamento {
         MockDatabase.medicamentos.add(
             medicamento.copy(
                 id = "med${MockDatabase.medicamentos.size + 1}"
             )
         )
+
+        return medicamento
     }
 
     override suspend fun atualizarMedicamento(
         medicamento: Medicamento
-    ) {
+    ): Medicamento {
         val index = MockDatabase.medicamentos.indexOfFirst {
             it.id == medicamento.id
         }
@@ -253,6 +263,8 @@ class MockMedicamentoRepository : MedicamentoRepository {
         if (index >= 0) {
             MockDatabase.medicamentos[index] = medicamento
         }
+
+        return medicamento
     }
 
     override suspend fun excluirMedicamento(

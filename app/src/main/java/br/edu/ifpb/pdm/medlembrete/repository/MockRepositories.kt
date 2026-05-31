@@ -8,6 +8,8 @@ import br.edu.ifpb.pdm.medlembrete.model.Paciente
 import br.edu.ifpb.pdm.medlembrete.model.RegistroMedicacao
 import br.edu.ifpb.pdm.medlembrete.model.Usuario
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 object MockDatabase {
     val usuarios = mutableListOf(
@@ -338,7 +340,13 @@ class MockRegistroMedicacaoRepository :
             it.id == registro.id
         }
     }
-    
+
+    override fun observarRegistrosDoDia(
+        pacienteId: String
+    ): Flow<List<RegistroMedicacao>> = flow {
+        emit(listarRegistrosPorPaciente(pacienteId))
+    }
+
 
 }
 

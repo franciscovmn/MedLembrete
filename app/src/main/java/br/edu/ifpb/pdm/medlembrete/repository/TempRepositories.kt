@@ -6,6 +6,7 @@ import br.edu.ifpb.pdm.medlembrete.model.Medicamento
 import br.edu.ifpb.pdm.medlembrete.model.Paciente
 import br.edu.ifpb.pdm.medlembrete.model.RegistroMedicacao
 import br.edu.ifpb.pdm.medlembrete.model.Usuario
+import kotlinx.coroutines.flow.Flow
 
 /*
     Aqui entra a parte do Felipe:
@@ -66,6 +67,8 @@ interface RegistroMedicacaoRepository {
     suspend fun atualizarRegistro(registro: RegistroMedicacao): RegistroMedicacao
 
     suspend fun excluirRegistro(registro: RegistroMedicacao)
+
+    fun observarRegistrosDoDia(pacienteId: String): Flow<List<RegistroMedicacao>>
 }
 
 interface HorarioMedicacaoRepository {

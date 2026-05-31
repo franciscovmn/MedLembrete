@@ -12,6 +12,7 @@ data class RegistroMedicacao(
     var medicamentoId: String = "",
     var usuarioId: String = "",
     var data: Timestamp? = null,
+    var horarioProgramado: String = "",
     var horarioConfirmacao: String = "",
     var status: StatusMedicacao = StatusMedicacao.PENDENTE
 )

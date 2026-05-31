@@ -70,4 +70,15 @@ dependencies {
 
     //firebase firestore
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.4")
+
+    //rede: Retrofit + OkHttp + Gson
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
+
+    //coroutines (suspend funcs no Retrofit)
+    implementation(libs.kotlinx.coroutines.android)
+
+    //testes
+    testImplementation(libs.kotlinx.coroutines.test)
 }

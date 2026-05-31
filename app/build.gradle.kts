@@ -79,6 +79,9 @@ dependencies {
     //coroutines (suspend funcs no Retrofit)
     implementation(libs.kotlinx.coroutines.android)
 
+    //coroutines + Firebase Tasks (.await())
+    implementation(libs.kotlinx.coroutines.play.services)
+
     //testes
     testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -2,12 +2,12 @@ package br.edu.ifpb.pdm.medlembrete.model
 
 import br.edu.ifpb.pdm.medlembrete.enums.StatusMedicacao
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 data class RegistroMedicacao(
-    @DocumentId var id: String? = null,
+    @get:Exclude var id: String? = null,
     var pacienteId: String = "",
     var medicamentoId: String = "",
     var usuarioId: String = "",

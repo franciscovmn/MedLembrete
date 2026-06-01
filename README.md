@@ -75,7 +75,7 @@ app/src/main/java/br/edu/ifpb/pdm/medlembrete/
  
 | GitHub | Responsabilidades |
 |--------|-------------------|
-| [@muciri](https://github.com/muciri) | Models, repositórios, dados mockados |
+| [@muciri](https://github.com/muciri) | Modelagem das entidades, Configuração do Firestore, criação dos services |
 | [@Felipejjjj](https://github.com/Felipejjjj) | Camada de rede, Retrofit, integração OpenFDA |
 | [@franciscovmn](https://github.com/franciscovmn) | UI, navegação, Firestore em tempo real, arquitetura |
  

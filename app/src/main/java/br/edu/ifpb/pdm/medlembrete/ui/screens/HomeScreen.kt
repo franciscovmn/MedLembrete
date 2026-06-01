@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +42,7 @@ import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.ItemHome
 fun HomeScreen(
     onAbrirDetalhe: (medicamentoId: String) -> Unit,
     onAbrirHistorico: () -> Unit,
+    onAbrirCadastrarMedicamento: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,6 +57,12 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(titulo) },
                 actions = {
+                    IconButton(onClick = onAbrirCadastrarMedicamento) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Novo medicamento"
+                        )
+                    }
                     IconButton(onClick = onAbrirHistorico) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.List,

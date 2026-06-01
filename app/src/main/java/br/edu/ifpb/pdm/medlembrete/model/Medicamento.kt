@@ -7,6 +7,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 data class Medicamento(
     @get:Exclude var id: String? = null,
     var nome: String = "",
+    var nomeEn: String? = null,
     var dosagem: String = "",
     var instrucoesUso: String = "",
     var pacienteId: String = ""

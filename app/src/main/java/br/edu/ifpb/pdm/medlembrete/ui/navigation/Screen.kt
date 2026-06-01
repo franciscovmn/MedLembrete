@@ -10,4 +10,6 @@ sealed class Screen(val route: String) {
     }
 
     data object Historico : Screen("historico")
+
+    data object CadastrarMedicamento : Screen("cadastrar-medicamento")
 }

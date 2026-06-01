@@ -7,6 +7,7 @@ import br.edu.ifpb.pdm.medlembrete.repository.OpenFdaRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RegistroMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RepositoryProvider
 import br.edu.ifpb.pdm.medlembrete.repository.UsuarioRepository
+import br.edu.ifpb.pdm.medlembrete.ui.util.resolverNomeEn
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -41,8 +42,15 @@ class DetalheViewModel(
                     val registrosBrutos = registrosBrutosAsync.await()
 
                     // OpenFDA é opcional — nunca derruba a tela.
+                    // Usa o mapeamento PT→EN (ou o nomeEn manual do medicamento) para aumentar
+                    // a chance de match no catálogo americano.
                     val infoExternaAsync = async {
-                        openFdaRepository.buscarInfoMedicamento(medicamento.nome).getOrNull()
+                        val nomeParaBusca = resolverNomeEn(medicamento.nome, medicamento.nomeEn)
+                        if (nomeParaBusca != null) {
+                            openFdaRepository.buscarInfoMedicamento(nomeParaBusca).getOrNull()
+                        } else {
+                            null
+                        }
                     }
 
                     // Cada cuidador é buscado em paralelo via doc-level read.

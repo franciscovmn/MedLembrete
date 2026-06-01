@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import br.edu.ifpb.pdm.medlembrete.ui.navigation.Screen
+import br.edu.ifpb.pdm.medlembrete.ui.screens.CadastrarMedicamentoScreen
 import br.edu.ifpb.pdm.medlembrete.ui.screens.DetalheMedicamentoScreen
 import br.edu.ifpb.pdm.medlembrete.ui.screens.HistoricoScreen
 import br.edu.ifpb.pdm.medlembrete.ui.screens.HomeScreen
@@ -44,7 +45,17 @@ fun MedLembreteApp() {
                 },
                 onAbrirHistorico = {
                     navController.navigate(Screen.Historico.route)
+                },
+                onAbrirCadastrarMedicamento = {
+                    navController.navigate(Screen.CadastrarMedicamento.route)
                 }
+            )
+        }
+
+        composable(route = Screen.CadastrarMedicamento.route) {
+            CadastrarMedicamentoScreen(
+                onVoltar = { navController.popBackStack() },
+                onSucesso = { navController.popBackStack() }
             )
         }
 

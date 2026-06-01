@@ -14,7 +14,7 @@ class OpenFdaRepository(
             val termo = nome.trim()
             require(termo.isNotEmpty()) { "Nome do medicamento não pode ser vazio." }
 
-            val query = "openfda.brand_name:\"$termo\"+openfda.generic_name:\"$termo\""
+            val query = "openfda.brand_name:\"$termo\" OR openfda.generic_name:\"$termo\""
             val resposta = api.buscarLabel(search = query, limit = 1)
 
             val primeiro = resposta.results?.firstOrNull()

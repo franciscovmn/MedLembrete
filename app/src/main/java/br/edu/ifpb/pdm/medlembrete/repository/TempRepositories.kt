@@ -69,6 +69,13 @@ interface RegistroMedicacaoRepository {
     suspend fun excluirRegistro(registro: RegistroMedicacao)
 
     fun observarRegistrosDoDia(pacienteId: String): Flow<List<RegistroMedicacao>>
+
+    suspend fun listarTodosRegistrosComFiltro(
+        pacienteId: String,
+        nomeMedicamento: String? = null,
+        data: String? = null,
+        usuarioId: String? = null
+    ): List<RegistroMedicacao> = emptyList()
 }
 
 interface HorarioMedicacaoRepository {

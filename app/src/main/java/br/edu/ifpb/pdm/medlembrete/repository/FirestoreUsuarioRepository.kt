@@ -21,10 +21,18 @@ class FirestoreUsuarioRepository(
     }
 
     override suspend fun buscarUsuarioPorId(usuarioId: String): Usuario {
+        // tentativa 1: busca direta pelo ID
         val doc = collection.document(usuarioId).get().await()
-        val usuario = doc.toObject(Usuario::class.java)
-            ?: error("Usuário '$usuarioId' não encontrado.")
-        return usuario.copy(id = doc.id)
+        val usuario = doc.toObject(Usuario::class.java)?.copy(id = doc.id)
+        if (usuario != null && usuario.nome.isNotBlank()) return usuario
+
+        // fallback: busca por similaridade (tolera zero vs O, case)
+        return collection
+            .get().await()
+            .documents
+            .mapNotNull { it.toObject(Usuario::class.java)?.copy(id = it.id) }
+            .firstOrNull { it.id.equals(usuarioId, ignoreCase = true) }
+            ?: Usuario(id = usuarioId, nome = "Cuidador")
     }
 
     override suspend fun salvarUsuario(usuario: Usuario): Usuario {

@@ -347,6 +347,13 @@ class MockRegistroMedicacaoRepository :
         emit(listarRegistrosPorPaciente(pacienteId))
     }
 
+    override suspend fun listarTodosRegistrosComFiltro(
+        pacienteId: String,
+        nomeMedicamento: String?,
+        data: String?,
+        usuarioId: String?
+    ): List<RegistroMedicacao> = listarRegistrosPorPaciente(pacienteId)
+
 
 }
 

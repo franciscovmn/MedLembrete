@@ -1,21 +1,27 @@
 package br.edu.ifpb.pdm.medlembrete.repository
 
+import br.edu.ifpb.pdm.medlembrete.model.Medicamento
 import br.edu.ifpb.pdm.medlembrete.model.RegistroMedicacao
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class FirestoreRegistroMedicacaoRepository(
-    firestore: FirebaseFirestore = Firebase.firestore
+    private val firestore: FirebaseFirestore = Firebase.firestore
 ) : RegistroMedicacaoRepository {
 
     private val collection = firestore.collection(COLLECTION)
+    private val formatoDataBr = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("pt-BR"))
 
     override suspend fun listarRegistros(): List<RegistroMedicacao> = try {
         collection.get().await().documents.mapNotNull { doc ->
@@ -99,6 +105,85 @@ class FirestoreRegistroMedicacaoRepository(
         awaitClose { registration.remove() }
     }
 
+    override suspend fun listarTodosRegistrosComFiltro(
+        pacienteId: String,
+        nomeMedicamento: String?,
+        data: String?,
+        usuarioId: String?
+    ): List<RegistroMedicacao> = try {
+        // Query base: todos os registros do paciente, ordenados por data desc.
+        // Exige índice composto (pacienteId ASC, data DESC) — link aparece no log na 1a chamada.
+        val todos = collection
+            .whereEqualTo("pacienteId", pacienteId)
+            .orderBy("data", Query.Direction.DESCENDING)
+            .get().await()
+            .documents.mapNotNull { doc ->
+                doc.toObject(RegistroMedicacao::class.java)?.copy(id = doc.id)
+            }
+
+        var resultado = todos
+
+        // Filtro 1: usuarioId — comparação direta no campo do registro.
+        if (!usuarioId.isNullOrBlank()) {
+            resultado = resultado.filter { it.usuarioId == usuarioId }
+        }
+
+        // Filtro 2: data — dia inteiro no fuso local.
+        if (!data.isNullOrBlank()) {
+            val intervalo = parseIntervaloDoDia(data)
+            if (intervalo != null) {
+                val (inicio, fim) = intervalo
+                resultado = resultado.filter { reg ->
+                    val regData = reg.data?.toDate() ?: return@filter false
+                    !regData.before(inicio) && !regData.after(fim)
+                }
+            }
+        }
+
+        // Filtro 3: nomeMedicamento — case-insensitive contains.
+        // Precisa cruzar registro.medicamentoId com a coleção Medicamento.
+        if (!nomeMedicamento.isNullOrBlank()) {
+            val termo = nomeMedicamento.trim()
+            val medicamentosDoPaciente = firestore.collection(MEDICAMENTO_COLLECTION)
+                .whereEqualTo("pacienteId", pacienteId)
+                .get().await()
+                .documents.mapNotNull { doc ->
+                    doc.toObject(Medicamento::class.java)?.copy(id = doc.id)
+                }
+            val idsQueBatem = medicamentosDoPaciente
+                .filter { it.nome.contains(termo, ignoreCase = true) }
+                .mapNotNull { it.id }
+                .toSet()
+            resultado = resultado.filter { it.medicamentoId in idsQueBatem }
+        }
+
+        resultado
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    private fun parseIntervaloDoDia(data: String): Pair<Date, Date>? = try {
+        val parsed = formatoDataBr.parse(data) ?: return null
+        val cal = Calendar.getInstance().apply {
+            time = parsed
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val inicio = cal.time
+        cal.apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }
+        val fim = cal.time
+        inicio to fim
+    } catch (e: Exception) {
+        null
+    }
+
     private fun intervaloDoDiaAtual(): Pair<Timestamp, Timestamp> {
         val inicio = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -117,5 +202,6 @@ class FirestoreRegistroMedicacaoRepository(
 
     private companion object {
         const val COLLECTION = "RegistroMedicacao"
+        const val MEDICAMENTO_COLLECTION = "Medicamento"
     }
 }

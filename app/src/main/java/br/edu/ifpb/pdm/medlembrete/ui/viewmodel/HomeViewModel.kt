@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.ifpb.pdm.medlembrete.enums.StatusMedicacao
 import br.edu.ifpb.pdm.medlembrete.model.RegistroMedicacao
+import br.edu.ifpb.pdm.medlembrete.repository.AppEvents
 import br.edu.ifpb.pdm.medlembrete.repository.HorarioMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.MedicamentoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.PacienteRepository
@@ -26,7 +27,7 @@ import java.util.Date
 import java.util.Locale
 
 // TODO: substituir por sessão real quando o login estiver implementado.
-private const val USUARIO_ID_ATUAL = "MMmPLyyOPxe7DhI7jvh9"  // Murilo
+private const val USUARIO_ID_ATUAL = "MMmPLyy0Pxe7DhI7jvh9"  // Murilo
 private const val PACIENTE_ID_ATUAL = "kctuDccqdTHc6FKtBDtO"  // Roberto
 
 class HomeViewModel(
@@ -47,6 +48,12 @@ class HomeViewModel(
         viewModelScope.launch { carregarMedicamentosDoDia() }
         // Sincronização em tempo real — fluxo de erro separado via .catch.
         observarRegistros()
+        // Recarrega quando outro VM avisa que cadastrou medicamento.
+        viewModelScope.launch {
+            AppEvents.medicamentoCadastrado.collect {
+                carregarMedicamentosDoDia()
+            }
+        }
     }
 
     fun recarregar() {

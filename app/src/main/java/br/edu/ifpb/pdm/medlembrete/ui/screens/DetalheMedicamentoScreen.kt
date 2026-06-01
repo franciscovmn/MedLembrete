@@ -16,10 +16,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -28,10 +31,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,9 +65,34 @@ fun DetalheMedicamentoScreen(
     viewModel: DetalheViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(medicamentoId) {
         viewModel.carregarDetalhe(medicamentoId)
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Excluir medicamento?") },
+            text = {
+                Text("Esta ação não pode ser desfeita. Todos os horários também serão removidos.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        viewModel.excluirMedicamento(medicamentoId) { onVoltar() }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("Excluir") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) { Text("Cancelar") }
+            }
+        )
     }
 
     Scaffold(
@@ -72,6 +104,14 @@ fun DetalheMedicamentoScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Voltar"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Excluir medicamento"
                         )
                     }
                 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.ifpb.pdm.medlembrete.model.HorarioMedicacao
 import br.edu.ifpb.pdm.medlembrete.model.Medicamento
+import br.edu.ifpb.pdm.medlembrete.repository.AppEvents
 import br.edu.ifpb.pdm.medlembrete.repository.HorarioMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.MedicamentoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RepositoryProvider
@@ -128,6 +129,7 @@ class CadastrarMedicamentoViewModel(
                 }
 
                 _form.value = _form.value.copy(salvando = false, sucesso = true)
+                AppEvents.medicamentoCadastrado.tryEmit(Unit)
             } catch (e: Exception) {
                 _form.value = _form.value.copy(
                     salvando = false,

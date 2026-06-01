@@ -2,6 +2,8 @@ package br.edu.ifpb.pdm.medlembrete.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.edu.ifpb.pdm.medlembrete.repository.AppEvents
+import br.edu.ifpb.pdm.medlembrete.repository.HorarioMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.MedicamentoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.OpenFdaRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RegistroMedicacaoRepository
@@ -20,6 +22,7 @@ class DetalheViewModel(
     private val medicamentoRepository: MedicamentoRepository = RepositoryProvider.medicamentoRepository,
     private val registroRepository: RegistroMedicacaoRepository = RepositoryProvider.registroMedicacaoRepository,
     private val usuarioRepository: UsuarioRepository = RepositoryProvider.usuarioRepository,
+    private val horarioRepository: HorarioMedicacaoRepository = RepositoryProvider.horarioMedicacaoRepository,
     private val openFdaRepository: OpenFdaRepository = OpenFdaRepository(),
 ) : ViewModel() {
 
@@ -81,5 +84,28 @@ class DetalheViewModel(
 
     fun recarregar(medicamentoId: String) {
         carregarDetalhe(medicamentoId)
+    }
+
+    fun excluirMedicamento(medicamentoId: String, onSucesso: () -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = DetalheUiState.Loading
+            try {
+                val horarios = horarioRepository.listarPorMedicamento(medicamentoId)
+                coroutineScope {
+                    horarios.map { h ->
+                        async { horarioRepository.excluirHorario(h) }
+                    }.awaitAll()
+                }
+
+                medicamentoRepository.excluirMedicamento(medicamentoId)
+
+                AppEvents.medicamentoCadastrado.tryEmit(Unit)
+                onSucesso()
+            } catch (e: Exception) {
+                _uiState.value = DetalheUiState.Error(
+                    e.message ?: "Erro ao excluir medicamento."
+                )
+            }
+        }
     }
 }

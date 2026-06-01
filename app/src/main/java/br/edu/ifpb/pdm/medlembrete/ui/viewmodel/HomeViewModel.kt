@@ -11,11 +11,13 @@ import br.edu.ifpb.pdm.medlembrete.repository.RegistroMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RepositoryProvider
 import br.edu.ifpb.pdm.medlembrete.repository.UsuarioRepository
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -37,15 +39,32 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private var listenerJob: Job? = null
+
     init {
-        viewModelScope.launch {
-            registroRepository.observarRegistrosDoDia(PACIENTE_ID_ATUAL)
-                .collect { _ -> carregarMedicamentosDoDia() }
-        }
+        // Carga inicial — independente do listener. Erros já tratados dentro.
+        viewModelScope.launch { carregarMedicamentosDoDia() }
+        // Sincronização em tempo real — fluxo de erro separado via .catch.
+        observarRegistros()
     }
 
     fun recarregar() {
         viewModelScope.launch { carregarMedicamentosDoDia() }
+        observarRegistros()
+    }
+
+    private fun observarRegistros() {
+        listenerJob?.cancel()
+        listenerJob = viewModelScope.launch {
+            registroRepository.observarRegistrosDoDia(PACIENTE_ID_ATUAL)
+                .catch { e ->
+                    _uiState.value = HomeUiState.Error(
+                        "Falha na sincronização em tempo real: " +
+                            (e.message ?: "erro desconhecido")
+                    )
+                }
+                .collect { _ -> carregarMedicamentosDoDia() }
+        }
     }
 
     fun confirmarMedicacao(item: ItemHome) {

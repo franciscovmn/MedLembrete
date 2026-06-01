@@ -75,22 +75,26 @@ class FirestoreRegistroMedicacaoRepository(
     override fun observarRegistrosDoDia(
         pacienteId: String
     ): Flow<List<RegistroMedicacao>> = callbackFlow {
-        val (inicio, fim) = intervaloDoDiaAtual()
-
-        val registration = collection
-            .whereEqualTo("pacienteId", pacienteId)
-            .whereGreaterThanOrEqualTo("data", inicio)
-            .whereLessThanOrEqualTo("data", fim)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
+        val registration = try {
+            val (inicio, fim) = intervaloDoDiaAtual()
+            collection
+                .whereEqualTo("pacienteId", pacienteId)
+                .whereGreaterThanOrEqualTo("data", inicio)
+                .whereLessThanOrEqualTo("data", fim)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        close(error)
+                        return@addSnapshotListener
+                    }
+                    val registros = snapshot?.documents.orEmpty().mapNotNull { doc ->
+                        doc.toObject(RegistroMedicacao::class.java)?.copy(id = doc.id)
+                    }
+                    trySend(registros)
                 }
-                val registros = snapshot?.documents.orEmpty().mapNotNull { doc ->
-                    doc.toObject(RegistroMedicacao::class.java)?.copy(id = doc.id)
-                }
-                trySend(registros)
-            }
+        } catch (e: Exception) {
+            close(e)
+            return@callbackFlow
+        }
 
         awaitClose { registration.remove() }
     }

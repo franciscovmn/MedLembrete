@@ -13,6 +13,7 @@ import br.edu.ifpb.pdm.medlembrete.repository.UsuarioRepository
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -98,15 +99,31 @@ class HomeViewModel(
             coroutineScope {
                 val pacienteAsync = async { pacienteRepository.buscarPacientePorId(PACIENTE_ID_ATUAL) }
                 val medicamentosAsync = async { medicamentoRepository.listarPorPacienteId(PACIENTE_ID_ATUAL) }
-                val usuariosAsync = async { usuarioRepository.listarUsuarios() }
                 val registrosDoDiaAsync = async {
                     registrosDoDia(registroRepository.listarRegistrosPorPaciente(PACIENTE_ID_ATUAL))
                 }
 
                 val paciente = pacienteAsync.await()
                 val medicamentos = medicamentosAsync.await()
-                val mapaUsuarios = usuariosAsync.await().associate { it.id to it.nome }
                 val registrosDoDia = registrosDoDiaAsync.await()
+
+                // Busca os usuários referenciados pelos registros via doc-level reads.
+                // listarUsuarios() pode falhar silenciosamente se as regras do Firestore
+                // negarem `list` na coleção Usuario, então usamos buscarUsuarioPorId.
+                val usuariosIds = registrosDoDia
+                    .map { it.usuarioId }
+                    .filter { it.isNotBlank() }
+                    .distinct()
+
+                val mapaUsuarios: Map<String, String> = usuariosIds.map { uid ->
+                    async {
+                        try {
+                            uid to usuarioRepository.buscarUsuarioPorId(uid).nome
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }.awaitAll().filterNotNull().toMap()
 
                 val horarios = medicamentos.mapNotNull { it.id }.flatMap { medId ->
                     horarioRepository.listarPorMedicamento(medId)
@@ -121,7 +138,10 @@ class HomeViewModel(
                             reg.medicamentoId == medId &&
                                 reg.horarioProgramado == horario.horario
                         }
-                        val nomeCuidador = registro?.usuarioId?.let { mapaUsuarios[it] }
+                        val nomeCuidador = registro
+                            ?.usuarioId
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { mapaUsuarios[it] }
                         itens += ItemHome(medicamento, horario, registro, nomeCuidador)
                     }
                 }

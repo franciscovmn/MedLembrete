@@ -111,7 +111,6 @@ class FirestoreRegistroMedicacaoRepository(
         data: String?,
         usuarioId: String?
     ): List<RegistroMedicacao> = try {
-        // Query base: todos os registros do paciente, ordenados por data desc.
         // Exige índice composto (pacienteId ASC, data DESC) — link aparece no log na 1a chamada.
         val todos = collection
             .whereEqualTo("pacienteId", pacienteId)
@@ -123,12 +122,10 @@ class FirestoreRegistroMedicacaoRepository(
 
         var resultado = todos
 
-        // Filtro 1: usuarioId — comparação direta no campo do registro.
         if (!usuarioId.isNullOrBlank()) {
             resultado = resultado.filter { it.usuarioId == usuarioId }
         }
 
-        // Filtro 2: data — dia inteiro no fuso local.
         if (!data.isNullOrBlank()) {
             val intervalo = parseIntervaloDoDia(data)
             if (intervalo != null) {
@@ -140,8 +137,6 @@ class FirestoreRegistroMedicacaoRepository(
             }
         }
 
-        // Filtro 3: nomeMedicamento — case-insensitive contains.
-        // Precisa cruzar registro.medicamentoId com a coleção Medicamento.
         if (!nomeMedicamento.isNullOrBlank()) {
             val termo = nomeMedicamento.trim()
             val medicamentosDoPaciente = firestore.collection(MEDICAMENTO_COLLECTION)

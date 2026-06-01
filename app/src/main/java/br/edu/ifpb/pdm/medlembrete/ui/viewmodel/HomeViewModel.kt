@@ -44,11 +44,9 @@ class HomeViewModel(
     private var listenerJob: Job? = null
 
     init {
-        // Carga inicial — independente do listener. Erros já tratados dentro.
         viewModelScope.launch { carregarMedicamentosDoDia() }
-        // Sincronização em tempo real — fluxo de erro separado via .catch.
         observarRegistros()
-        // Recarrega quando outro VM avisa que cadastrou medicamento.
+        // Recarrega quando outro VM sinaliza que cadastrou medicamento.
         viewModelScope.launch {
             AppEvents.medicamentoCadastrado.collect {
                 carregarMedicamentosDoDia()
@@ -90,8 +88,6 @@ class HomeViewModel(
                     status = StatusMedicacao.TOMADO
                 )
                 registroRepository.salvarRegistro(novoRegistro)
-                // O snapshotListener vai disparar a recarga automaticamente,
-                // mas chamamos manualmente para resposta imediata da UI.
                 carregarMedicamentosDoDia()
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(
@@ -114,9 +110,6 @@ class HomeViewModel(
                 val medicamentos = medicamentosAsync.await()
                 val registrosDoDia = registrosDoDiaAsync.await()
 
-                // Busca os usuários referenciados pelos registros via doc-level reads.
-                // listarUsuarios() pode falhar silenciosamente se as regras do Firestore
-                // negarem `list` na coleção Usuario, então usamos buscarUsuarioPorId.
                 val usuariosIds = registrosDoDia
                     .map { it.usuarioId }
                     .filter { it.isNotBlank() }

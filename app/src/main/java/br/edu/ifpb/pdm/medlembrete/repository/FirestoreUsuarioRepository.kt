@@ -21,7 +21,6 @@ class FirestoreUsuarioRepository(
     }
 
     override suspend fun buscarUsuarioPorId(usuarioId: String): Usuario {
-        // tentativa 1: busca direta pelo ID
         val doc = collection.document(usuarioId).get().await()
         val usuario = doc.toObject(Usuario::class.java)?.copy(id = doc.id)
         if (usuario != null && usuario.nome.isNotBlank()) return usuario

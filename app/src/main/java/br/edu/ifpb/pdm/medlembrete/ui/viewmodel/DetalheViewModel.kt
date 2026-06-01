@@ -41,9 +41,6 @@ class DetalheViewModel(
                     val medicamento = medicamentoAsync.await()
                     val registrosBrutos = registrosBrutosAsync.await()
 
-                    // OpenFDA é opcional — nunca derruba a tela.
-                    // Usa o mapeamento PT→EN (ou o nomeEn manual do medicamento) para aumentar
-                    // a chance de match no catálogo americano.
                     val infoExternaAsync = async {
                         val nomeParaBusca = resolverNomeEn(medicamento.nome, medicamento.nomeEn)
                         if (nomeParaBusca != null) {
@@ -53,7 +50,6 @@ class DetalheViewModel(
                         }
                     }
 
-                    // Cada cuidador é buscado em paralelo via doc-level read.
                     val registrosComCuidadorAsync = registrosBrutos.map { reg ->
                         async {
                             val nome = if (reg.usuarioId.isBlank()) {

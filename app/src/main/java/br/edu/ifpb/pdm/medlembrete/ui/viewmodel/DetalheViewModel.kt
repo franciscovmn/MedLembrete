@@ -19,13 +19,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class DetalheViewModel(
-    private val medicamentoRepository: MedicamentoRepository = RepositoryProvider.medicamentoRepository,
-    private val registroRepository: RegistroMedicacaoRepository = RepositoryProvider.registroMedicacaoRepository,
-    private val usuarioRepository: UsuarioRepository = RepositoryProvider.usuarioRepository,
-    private val horarioRepository: HorarioMedicacaoRepository = RepositoryProvider.horarioMedicacaoRepository,
-    private val openFdaRepository: OpenFdaRepository = OpenFdaRepository(),
+    private val medicamentoRepository: MedicamentoRepository,
+    private val registroRepository: RegistroMedicacaoRepository,
+    private val usuarioRepository: UsuarioRepository,
+    private val horarioRepository: HorarioMedicacaoRepository,
+    private val openFdaRepository: OpenFdaRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<DetalheUiState>(DetalheUiState.Loading)
     val uiState: StateFlow<DetalheUiState> = _uiState.asStateFlow()
 

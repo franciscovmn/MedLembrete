@@ -31,11 +31,11 @@ private const val USUARIO_ID_ATUAL = "MMmPLyy0Pxe7DhI7jvh9"  // Murilo
 private const val PACIENTE_ID_ATUAL = "kctuDccqdTHc6FKtBDtO"  // Roberto
 
 class HomeViewModel(
-    private val medicamentoRepository: MedicamentoRepository = RepositoryProvider.medicamentoRepository,
-    private val horarioRepository: HorarioMedicacaoRepository = RepositoryProvider.horarioMedicacaoRepository,
-    private val registroRepository: RegistroMedicacaoRepository = RepositoryProvider.registroMedicacaoRepository,
-    private val usuarioRepository: UsuarioRepository = RepositoryProvider.usuarioRepository,
-    private val pacienteRepository: PacienteRepository = RepositoryProvider.pacienteRepository,
+    private val medicamentoRepository: MedicamentoRepository,
+    private val horarioRepository: HorarioMedicacaoRepository,
+    private val registroRepository: RegistroMedicacaoRepository,
+    private val usuarioRepository: UsuarioRepository,
+    private val pacienteRepository: PacienteRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)

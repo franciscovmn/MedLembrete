@@ -19,9 +19,9 @@ import kotlinx.coroutines.launch
 private const val PACIENTE_ID_ATUAL = "kctuDccqdTHc6FKtBDtO"  // Roberto
 
 class HistoricoViewModel(
-    private val registroRepository: RegistroMedicacaoRepository = RepositoryProvider.registroMedicacaoRepository,
-    private val medicamentoRepository: MedicamentoRepository = RepositoryProvider.medicamentoRepository,
-    private val usuarioRepository: UsuarioRepository = RepositoryProvider.usuarioRepository,
+    private val registroRepository: RegistroMedicacaoRepository,
+    private val medicamentoRepository: MedicamentoRepository,
+    private val usuarioRepository: UsuarioRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HistoricoUiState>(HistoricoUiState.Loading)

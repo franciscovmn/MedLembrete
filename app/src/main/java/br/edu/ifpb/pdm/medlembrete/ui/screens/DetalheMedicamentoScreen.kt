@@ -53,6 +53,7 @@ import br.edu.ifpb.pdm.medlembrete.ui.util.toDataFormatada
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.DetalheUiState
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.DetalheViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.RegistroComCuidador
+import org.koin.androidx.compose.koinViewModel
 
 private val VerdeTomado = Color(0xFF2E7D32)
 private const val LIMITE_TEXTO_BULA = 300
@@ -62,7 +63,7 @@ private const val LIMITE_TEXTO_BULA = 300
 fun DetalheMedicamentoScreen(
     medicamentoId: String,
     onVoltar: () -> Unit,
-    viewModel: DetalheViewModel = viewModel()
+    viewModel: DetalheViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }

@@ -57,6 +57,7 @@ import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.FiltrosState
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HistoricoUiState
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HistoricoViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.ItemHistorico
+import org.koin.androidx.compose.koinViewModel
 
 private val VerdeTomado = Color(0xFF2E7D32)
 
@@ -64,7 +65,7 @@ private val VerdeTomado = Color(0xFF2E7D32)
 @Composable
 fun HistoricoScreen(
     onVoltar: () -> Unit,
-    viewModel: HistoricoViewModel = viewModel()
+    viewModel: HistoricoViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val filtros by viewModel.filtros.collectAsStateWithLifecycle()

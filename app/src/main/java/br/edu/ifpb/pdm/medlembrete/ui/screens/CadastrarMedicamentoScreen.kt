@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.CadastrarMedicamentoViewModel
+import org.koin.androidx.compose.koinViewModel
 
 private const val PACIENTE_ID_ATUAL = "kctuDccqdTHc6FKtBDtO"  // Roberto — TODO: substituir por sessão real
 private const val MAX_HORARIOS = 6
@@ -44,7 +45,7 @@ private const val MAX_HORARIOS = 6
 fun CadastrarMedicamentoScreen(
     onVoltar: () -> Unit,
     onSucesso: () -> Unit,
-    viewModel: CadastrarMedicamentoViewModel = viewModel()
+    viewModel: CadastrarMedicamentoViewModel = koinViewModel()
 ) {
     val form by viewModel.form.collectAsStateWithLifecycle()
 

@@ -36,6 +36,7 @@ import br.edu.ifpb.pdm.medlembrete.ui.components.MedicamentoCard
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HomeUiState
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HomeViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.ItemHome
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,7 @@ fun HomeScreen(
     onAbrirDetalhe: (medicamentoId: String) -> Unit,
     onAbrirHistorico: () -> Unit,
     onAbrirCadastrarMedicamento: () -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

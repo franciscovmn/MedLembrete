@@ -31,8 +31,8 @@ data class CadastrarForm(
 )
 
 class CadastrarMedicamentoViewModel(
-    private val medicamentoRepository: MedicamentoRepository = RepositoryProvider.medicamentoRepository,
-    private val horarioRepository: HorarioMedicacaoRepository = RepositoryProvider.horarioMedicacaoRepository,
+    private val medicamentoRepository: MedicamentoRepository,
+    private val horarioRepository: HorarioMedicacaoRepository,
 ) : ViewModel() {
 
     private val _form = MutableStateFlow(CadastrarForm())

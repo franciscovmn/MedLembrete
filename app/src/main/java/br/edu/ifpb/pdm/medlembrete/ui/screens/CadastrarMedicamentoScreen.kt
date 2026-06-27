@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.CadastrarMedicamentoViewModel
+import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.CadastrarUiState
 import org.koin.androidx.compose.koinViewModel
 
 private const val PACIENTE_ID_ATUAL = "kctuDccqdTHc6FKtBDtO"  // Roberto — TODO: substituir por sessão real
@@ -47,10 +48,12 @@ fun CadastrarMedicamentoScreen(
     onSucesso: () -> Unit,
     viewModel: CadastrarMedicamentoViewModel = koinViewModel()
 ) {
-    val form by viewModel.form.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val form = state.form
+    val salvando = state is CadastrarUiState.Salvando
 
-    LaunchedEffect(form.sucesso) {
-        if (form.sucesso) onSucesso()
+    LaunchedEffect(state) {
+        if (state is CadastrarUiState.Sucesso) onSucesso()
     }
 
     Scaffold(
@@ -152,7 +155,7 @@ fun CadastrarMedicamentoScreen(
                 Text("+ Adicionar horário")
             }
 
-            form.erro?.let { erro ->
+            (state as? CadastrarUiState.Editando)?.erro?.let { erro ->
                 Text(
                     text = erro,
                     color = MaterialTheme.colorScheme.error,
@@ -164,13 +167,13 @@ fun CadastrarMedicamentoScreen(
 
             Button(
                 onClick = { viewModel.salvar(PACIENTE_ID_ATUAL) },
-                enabled = !form.salvando,
+                enabled = !salvando,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Salvar medicamento")
             }
 
-            if (form.salvando) {
+            if (salvando) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
         }

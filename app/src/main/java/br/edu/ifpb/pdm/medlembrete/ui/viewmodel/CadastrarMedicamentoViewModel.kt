@@ -7,7 +7,6 @@ import br.edu.ifpb.pdm.medlembrete.model.Medicamento
 import br.edu.ifpb.pdm.medlembrete.repository.AppEvents
 import br.edu.ifpb.pdm.medlembrete.repository.HorarioMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.MedicamentoRepository
-import br.edu.ifpb.pdm.medlembrete.repository.RepositoryProvider
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -16,75 +15,54 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-private const val HORARIO_PADRAO = "08:00"
 private const val MAX_HORARIOS = 6
-
-data class CadastrarForm(
-    val nome: String = "",
-    val dosagem: String = "",
-    val instrucoesUso: String = "",
-    val nomeEn: String = "",
-    val horarios: List<String> = listOf(HORARIO_PADRAO),
-    val salvando: Boolean = false,
-    val erro: String? = null,
-    val sucesso: Boolean = false
-)
 
 class CadastrarMedicamentoViewModel(
     private val medicamentoRepository: MedicamentoRepository,
     private val horarioRepository: HorarioMedicacaoRepository,
 ) : ViewModel() {
 
-    private val _form = MutableStateFlow(CadastrarForm())
-    val form: StateFlow<CadastrarForm> = _form.asStateFlow()
+    private val _uiState = MutableStateFlow<CadastrarUiState>(CadastrarUiState.Editando())
+    val uiState: StateFlow<CadastrarUiState> = _uiState.asStateFlow()
 
-    fun onNomeChange(novo: String) {
-        _form.value = _form.value.copy(nome = novo, erro = null)
+    /** Aplica uma transformação no formulário, só quando o estado é editável. Limpa o erro. */
+    private fun atualizarForm(transform: (CadastrarForm) -> CadastrarForm) {
+        val estado = _uiState.value
+        if (estado !is CadastrarUiState.Editando) return
+        _uiState.value = estado.copy(form = transform(estado.form), erro = null)
     }
 
-    fun onDosagemChange(novo: String) {
-        _form.value = _form.value.copy(dosagem = novo, erro = null)
+    fun onNomeChange(novo: String) = atualizarForm { it.copy(nome = novo) }
+
+    fun onDosagemChange(novo: String) = atualizarForm { it.copy(dosagem = novo) }
+
+    fun onInstrucoesChange(novo: String) = atualizarForm { it.copy(instrucoesUso = novo) }
+
+    fun onNomeEnChange(novo: String) = atualizarForm { it.copy(nomeEn = novo) }
+
+    fun adicionarHorario() = atualizarForm { form ->
+        if (form.horarios.size >= MAX_HORARIOS) form
+        else form.copy(horarios = form.horarios + HORARIO_PADRAO)
     }
 
-    fun onInstrucoesChange(novo: String) {
-        _form.value = _form.value.copy(instrucoesUso = novo, erro = null)
+    fun removerHorario(index: Int) = atualizarForm { form ->
+        if (form.horarios.size <= 1 || index !in form.horarios.indices) form
+        else form.copy(horarios = form.horarios.toMutableList().apply { removeAt(index) })
     }
 
-    fun onNomeEnChange(novo: String) {
-        _form.value = _form.value.copy(nomeEn = novo, erro = null)
-    }
-
-    fun adicionarHorario() {
-        val atual = _form.value.horarios
-        if (atual.size >= MAX_HORARIOS) return
-        _form.value = _form.value.copy(horarios = atual + HORARIO_PADRAO, erro = null)
-    }
-
-    fun removerHorario(index: Int) {
-        val atual = _form.value.horarios
-        if (atual.size <= 1) return
-        if (index !in atual.indices) return
-        _form.value = _form.value.copy(
-            horarios = atual.toMutableList().apply { removeAt(index) },
-            erro = null
-        )
-    }
-
-    fun atualizarHorario(index: Int, valor: String) {
-        val atual = _form.value.horarios
-        if (index !in atual.indices) return
-        _form.value = _form.value.copy(
-            horarios = atual.toMutableList().apply { this[index] = valor },
-            erro = null
-        )
+    fun atualizarHorario(index: Int, valor: String) = atualizarForm { form ->
+        if (index !in form.horarios.indices) form
+        else form.copy(horarios = form.horarios.toMutableList().apply { this[index] = valor })
     }
 
     fun salvar(pacienteId: String) {
-        val estado = _form.value
+        val estado = _uiState.value
+        if (estado !is CadastrarUiState.Editando) return
+        val form = estado.form
 
-        val nome = estado.nome.trim()
-        val dosagem = estado.dosagem.trim()
-        val horariosLimpos = estado.horarios
+        val nome = form.nome.trim()
+        val dosagem = form.dosagem.trim()
+        val horariosLimpos = form.horarios
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .distinct()
@@ -96,18 +74,18 @@ class CadastrarMedicamentoViewModel(
             else -> null
         }
         if (erroValidacao != null) {
-            _form.value = estado.copy(erro = erroValidacao)
+            _uiState.value = estado.copy(erro = erroValidacao)
             return
         }
 
         viewModelScope.launch {
-            _form.value = estado.copy(salvando = true, erro = null)
+            _uiState.value = CadastrarUiState.Salvando(form)
             try {
                 val medicamento = Medicamento(
                     nome = nome,
-                    nomeEn = estado.nomeEn.trim().ifBlank { null },
+                    nomeEn = form.nomeEn.trim().ifBlank { null },
                     dosagem = dosagem,
-                    instrucoesUso = estado.instrucoesUso.trim(),
+                    instrucoesUso = form.instrucoesUso.trim(),
                     pacienteId = pacienteId
                 )
                 val salvo = medicamentoRepository.salvarMedicamento(medicamento)
@@ -128,11 +106,11 @@ class CadastrarMedicamentoViewModel(
                     }.awaitAll()
                 }
 
-                _form.value = _form.value.copy(salvando = false, sucesso = true)
+                _uiState.value = CadastrarUiState.Sucesso(form)
                 AppEvents.medicamentoCadastrado.tryEmit(Unit)
             } catch (e: Exception) {
-                _form.value = _form.value.copy(
-                    salvando = false,
+                _uiState.value = CadastrarUiState.Editando(
+                    form = form,
                     erro = "Não foi possível salvar: ${e.message ?: "erro desconhecido"}"
                 )
             }

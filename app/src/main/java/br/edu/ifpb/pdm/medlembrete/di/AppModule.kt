@@ -15,6 +15,8 @@ import br.edu.ifpb.pdm.medlembrete.repository.OpenFdaRepository
 import br.edu.ifpb.pdm.medlembrete.repository.PacienteRepository
 import br.edu.ifpb.pdm.medlembrete.repository.RegistroMedicacaoRepository
 import br.edu.ifpb.pdm.medlembrete.repository.UsuarioRepository
+import br.edu.ifpb.pdm.medlembrete.repository.local.AppDatabase
+import br.edu.ifpb.pdm.medlembrete.repository.local.OfflineFirstMedicamentoRepository
 import br.edu.ifpb.pdm.medlembrete.service.AcompanhamentoService
 import br.edu.ifpb.pdm.medlembrete.service.HorarioMedicacaoService
 import br.edu.ifpb.pdm.medlembrete.service.MedicamentoService
@@ -25,6 +27,7 @@ import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.CadastrarMedicamentoViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.DetalheViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HistoricoViewModel
 import br.edu.ifpb.pdm.medlembrete.ui.viewmodel.HomeViewModel
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -36,8 +39,19 @@ val appModule = module {
     // OpenFDA
     single { OpenFdaRepository(get()) }
 
+    // ROOM (banco local / cache offline)
+    single { AppDatabase.build(androidContext()) }
+    single { get<AppDatabase>().medicamentoDao() }
+
     // REPOSITORIES
-    single<MedicamentoRepository> { FirestoreMedicamentoRepository() }
+    // Medicamento: offline-first — Firestore como fonte da verdade + cache Room.
+    single<MedicamentoRepository> {
+        OfflineFirstMedicamentoRepository(
+            remoto = FirestoreMedicamentoRepository(),
+            dao = get()
+        )
+    }
+
     single<HorarioMedicacaoRepository> { FirestoreHorarioMedicacaoRepository() }
     single<RegistroMedicacaoRepository> { FirestoreRegistroMedicacaoRepository() }
     single<PacienteRepository> { FirestorePacienteRepository() }
